@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chatbot</title>
+  </head>
+  <body>
+    <div class="js-container"></div>
+    
+   <script src="https://unpkg.com/supersimpledev/react.js"></script>
+    <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
+
+    <script src="https://unpkg.com/supersimpledev/babel.js"></script>
+    <script type="text/babel">
+      
+      function ChatInput(){
+        return (
+          
+          <>
+            <input 
+              placeholder= "Send a message to Chatbot" 
+              size= "30" 
+            />
+
+            <button>Send</button>
+          </>
+        );
+      }
+      function ChatMessage({ message, sender }){
+        //const message = props.message;
+        // sender = props.sender;
+
+        //const{message, sender} = props; // this will get message and sender property out of the props object and seve it in that variables
+        
+        /*
+        if(sender === 'robot'){
+          return(
+            <div>
+              <img src= "robot.png" width= "50"/>
+              {message}
+            </div>
+          );
+        }
+        */
+        
+        return (
+          <div>
+            {sender === 'robot' && (
+              <img src= "robot.png" width= "50"/>
+            )}
+            {message}
+           {sender ==='user' && (
+              <img src= "user.png" width= "50"/>
+            )}
+          </div>
+        );
+        
+
+      }
+      
+      function App(){
+        return (
+          <>
+            <ChatInput />
+            <ChatMessage 
+              message = "Hello chatbot" 
+              sender= "user" 
+            />
+
+            <ChatMessage 
+              message= "Hello! How can I help you?" 
+              sender= "robot"
+            />
+            <ChatMessage 
+              message= "can you get me today's date?" 
+              sender= "user"
+            />
+            <ChatMessage 
+              message= "Today is August 14"
+              sender= "robot"
+            />
+          </>
+        )
+      }
+
+      
+        
+
+      const container = document.querySelector('.js-container');
+      //const root = ReactDOM.createRoot(container);
+      //root.render(<App />);
+     
+      ReactDOM.createRoot(container).render(<App />);
+    </script>
+  </body>
+</html>
+
+<!--
+  Components
+  ----------
+  -> def: is a reusable, self-contained piece of UI that can have its own
+  structure (HTML/JSX), styling (CSS), and behavior (JavaScript logic).
+  -> A component name must start with a capital letter(PascalCase)
+  -> It is the piece of website.
+  -> It helps a developer to split up the website into pieces which is better practice.
+  so a developer can work on a small piece of the website at a time.
+  -> Every component function gets one parameter called 'props'.
+  -> This props parameter is an object and it contains all attributes we give to component.
+  -> We can use props to access our attributes.
+  -> We use props to reuse components.
+  -> most of the time we use a function when creating(naming) React components.
+ 
+  Example
+  -------
+  function Header() {
+    return <h1>My Website</h1>;
+  }
+
+  function App() {
+    return (
+      <div>
+        <Header />
+        <p>Welcome to my site!</p>
+      </div>
+    );
+  }
+
+  
+  Key Features of Components
+  ------------------------
+  
+  Reusable → Use the same component in multiple places.
+  Isolated → Changes inside one component don’t break others.
+  Composable → Combine small components into bigger ones.
+  Props → Components can receive data from their parent.
+  State → Components can store and update their own data
+
+  Note:  Function in JSX we return only one values/element.
+  But we can use div to group more element
+
+  -> <ChatInput></ChatInput> is called component syntax(it is a react special
+  syntax used to insert a component)
+
+  -> Size attribute means how many characters can fit in this <input>
+
+  Fragment(<></>)
+  ---------------
+  -> Is another way of grouping element together in React, without creating an extra <div>
+  
+
+  Guard operator (&&)
+  ------------------
+  ->It’s a shorter alternative to if statements or ternary operators when you only need to 
+  show something in one case
+  -> If value1 is true, the result will be value2 (ex: const result = value1 && value2);
+  -> We can use && as an if-statement in our JSX.
+
+   
+-->
+
+
+
+ 
