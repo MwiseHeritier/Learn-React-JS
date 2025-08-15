@@ -7,21 +7,91 @@
     <div class="js-container"></div>
     
    <script src="https://unpkg.com/supersimpledev/react.js"></script>
-    <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
+   <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
+    
+   <script src="https://unpkg.com/supersimpledev/chatbot.js"></script>
 
     <script src="https://unpkg.com/supersimpledev/babel.js"></script>
     <script type="text/babel">
       
-      function ChatInput(){
-        return (
+      function ChatInput({chatMessages, setChatMessages}){
+        const [inputText, setInputText] = React.useState('') // initial value is empty bcz text box originally starts as empty, inputText is the current data or current text in the text box
+        const [isLoading, setIsLoading] = React.useState(false);    
+      
+        function saveInputText(event){
+          setInputText(event.target.value);
+        }
+        
+        
+        
           
+        
+          
+        async  function sendMessage (){ // we async here bcz await is always inside the async
+          
+          // disable the send button when the we are in loading state and when input is empty
+          if (isLoading || inputText === '') {
+            return;
+          }
+          // Set isLoading to true at the start, and set it to
+          // false after everything is done.
+          setIsLoading(true);
+
+          // We can put this at the top of the function or
+          // after the first setChatMessages(). Both work.
+          setInputText('');
+
+        
+          const newChatMessages = [ // we save this in a variable so that it will be saved.
+            ...chatMessages,
+            { //we adds a new chat message ata the end of the copy
+              message: inputText,
+              sender: 'user',
+              id: crypto.randomUUID()
+            },
+            // Another solution is to add the Loading... message
+            // to newChatMessages, but we have to remove it later.
+            {
+              message: 'Loading...',
+              sender: 'robot',
+              id: crypto.randomUUID()
+            }
+          ];
+          setChatMessages(newChatMessages);
+
+          const response = await Chatbot.getResponseAsync(inputText); //We use this object from external library in order to get response from the chatbot. The parameter we use is the message we sent
+          setChatMessages([  
+            // we can also use this to update update the website.
+            // This makes a copy of newChatMessages, but without the
+            // last message in the array.
+            ...newChatMessages.slice(0, newChatMessages.length - 1),
+            { 
+              message: response,
+              sender: 'robot',
+              id: crypto.randomUUID()
+            }
+          ]);
+           setIsLoading(false);
+          //setInputText(''); // this will update the input Text in the textbox to be empty, it will not update the html yet. To update the html we need to use this inputText inside the html, we will give input element the prop called 'value'. 
+        }
+        function handleKeyDown(event) {
+          if (event.key === 'Enter') {
+            sendMessage();
+          }
+           else if (event.key === 'Escape') {
+            setInputText('');
+          }
+        }
+        return (
           <>
             <input 
               placeholder= "Send a message to Chatbot" 
-              size= "30" 
+              size= "30" onChange={saveInputText}
+              onKeyDown={handleKeyDown}
+              value={inputText}
             />
 
-            <button>Send</button>
+            <button onClick= {sendMessage}>Send</button>
           </>
         );
       }
@@ -53,31 +123,71 @@
             )}
           </div>
         );
+      }
+
+      function ChatMessages({chatMessages}){
         
+
+        
+        
+        return (
+          <> 
+           
+            {chatMessages.map((chatMessage) => {
+              return(
+                <ChatMessage 
+                  message = {chatMessage.message}
+                  sender = {chatMessage.sender}
+                  key= {chatMessage.id}
+                />
+              );
+            })}
+          </>
+        )
 
       }
       
       function App(){
+        const [chatMessages, setChatMessages]= React.useState([ 
+          {
+            message: 'Hello chatbot',
+            sender: 'user',
+            id: 'id1'
+         },
+
+          {
+            message: 'Hello! How can I help you?',
+            sender: 'robot',
+            id: 'id2'
+          },
+
+          {
+            message: 'can you get me todays date?',
+            sender: 'user',
+            id: 'id3'
+          },
+
+          {
+            message: 'Today is August 14',
+            sender: 'robot',
+            id: 'id4'
+          } 
+        ]);
+        
+        //const [chatMessages, setChartMessages] = array; // array destructing shortcut, accessing the props
+        //const chatMessages = array[0];
+        //const setChatMessages = array[1];
+
         return (
           <>
-            <ChatInput />
-            <ChatMessage 
-              message = "Hello chatbot" 
-              sender= "user" 
+            <ChatInput 
+              chatMessages= {chatMessages}
+              setChatMessages = {setChatMessages}
             />
-
-            <ChatMessage 
-              message= "Hello! How can I help you?" 
-              sender= "robot"
+            <ChatMessages 
+              chatMessages = {chatMessages}
             />
-            <ChatMessage 
-              message= "can you get me today's date?" 
-              sender= "user"
-            />
-            <ChatMessage 
-              message= "Today is August 14"
-              sender= "robot"
-            />
+            
           </>
         )
       }
@@ -154,8 +264,92 @@
   -> If value1 is true, the result will be value2 (ex: const result = value1 && value2);
   -> We can use && as an if-statement in our JSX.
 
-   
--->
+  NOTE
+  ----
+  ->.map() takes each object in the array and save it in chatMessage parameter, this parameter
+  contains chatmessage object and each chatmessage message and sender.
+
+  ->Key helps React to track changes in the array and it should be unique.
+  -> Destructuring is a JavaScript feature that lets you extract data from objects or arrays and 
+  assign it to variables in a concise way
+
+  EVENT HANDLERS
+  --------------
+  -> An event handler is simply a function that runs in response to an event — like a button click, 
+  text input change, or form submission.
+  -> For example "onclick={sendMessage}" onclick is event whicle sendMessage is an event handler
+  -> We shouldn't use bracket '()' on event handler
+  ->Run a function when we interact with the website
+
+  crypto.randomUUID()
+  ------------------
+  -> is a JavaScript built-in method that generates a universally unique identifier
+  (UUID) string in the format:
+
+  -> We use this in sendMessage function  inorder , everytime we click button it will create 
+  the unique id.
+
+  STATE
+  -----
+  -> Data that is connected to the HTML.
+  -> When we update this data, it will update the HTML.
+  -> is a built-in object that stores data or information about 
+  a component that can change over time.
+  ->When state changes, React automatically re-renders the component 
+  to reflect the new data in the UI.
+  -> Convert some data into state we use 'React.useState()'
+  ->React.useState returns/gives an array.
+  -> That array has two values, the first value is array[0] is called current data
+  -> in this example the first array will give us the current state value of chatMessages(current data);
+  -> The second value/ element is the function(updater function) to update the current state value.
+  -> The way updater function works it replaces the entire state values array with a new array
+  -> -> In React, we should not modify the data directly. we should always create 
+  a copy and then modify that copy, this helps React to be more efficient
+
+  Spread Operator(...)
+  --------------------
+  -> It takes the values in an array and copies them into a new array.
+ 
+
+  onChange property
+  ---------------
+  -> is an event handler used to detect and respond when the value of a form element changes.
+  -> fires when the input loses focus after a change
+  -> fires every time the value changes (while typing, selecting, or checking).
+  -> You provide it a function (event handler) to run whenever the change happens.
+  -> Every time we change the text inside the input it will run that function
+  -> When onChange runs the function  inside it, It gonnna give this function one parameter.
+  -> That parameter is called 'event'.
+  -> Event is an object and it contains details about event or change.
+  -> one detail is called event.target.
+  -> event.target give us the element that we are typing in or that we change.
+  ->event.target.value it give us text inside input or other elements.
+  -> We can use state to save that text bcz state save data that changes over time.
+
+  How "setInputText(event.target.value)" works
+  --------------------------------------------
+  -> “Hey, update inputText to this new value.”
+  -> React will re-render the component with the updated text.
+  
+  Lifting the State Up
+  -------------------
+  -> means moving a state variable from a child component into a common parent component, 
+  so that multiple child components can share and stay in sync with the same data.
+  
+  -> From this example we want to share chatMessages and setChatMessages states between ChatInput 
+  and ChatMessage component so we will put it in common component called 'App'
+
+  Why Do We Lift State Up?
+  ------------------------
+  ->If two or more components need to use or update the same data:
+  1.Keeping that state in each child separately can cause inconsistencies.
+  2.Instead, we store the state in their closest common ancestor and pass it down as props.
+
+  Controlled input
+  ----------------
+  -> is an input form element (like <input>, <textarea>, or <select>) whose value is controlled by React state.
+  -> For this example using the value prop we can controll the text inside the textbox using our code.
+--
 
 
 
