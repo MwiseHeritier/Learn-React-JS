@@ -2,11 +2,98 @@
 <html>
   <head>
     <title>Chatbot</title>
+    
+    <style>
+      body{
+        font-family: Arial;
+        margin-top: 0px;
+        margin-bottom: 0px;
+      }
+
+      .send-button{
+        background-color: rgb(25, 135, 84);
+        color: white;
+        padding: 12px 20px;
+        margin-left: 10px;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .chat-input{
+        padding: 12px 15px;
+        border-radius: 10px;
+        border-width: 0.2px;
+        font-size: 15px;
+
+        flex-grow: 1;
+      }
+      .chat-input-container{
+        display: flex;
+        margin-bottom: 60px;
+        
+
+      }
+      .app-container{
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      
+
+
+      }
+
+      .chat-message-user{
+        display: flex;
+        justify-content: end;
+        align-items: start;
+      }
+      .chat-message-robot{
+        display: flex;
+        align-items: start;
+
+      }
+      .chat-message-text{
+        background-color: rgb(238, 238, 238);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-right: 10px;
+        margin-left: 10px;
+        margin-bottom: 20px;
+        max-width: 300px;
+      }
+      
+      .chat-message-profile{
+        width: 45px;
+      }
+
+      .chat-messages-container{
+        flex-grow: 1;
+        margin-top: 20px;
+        overflow: scroll;
+        scrollbar-width: none;
+      }
+      .welcome-message {
+        color: rgb(120, 120, 120);
+        text-align: center;
+      }
+      .loading-spinner {
+        height: 40px;
+        margin: -15px;
+      }
+
+    </style>
+
   </head>
   <body>
     <div class="js-container"></div>
     
+   <script src=""></script>
    <script src="https://unpkg.com/supersimpledev/react.js"></script>
+
    <script src="https://unpkg.com/supersimpledev/react-dom.js"></script>
     
    <script src="https://unpkg.com/supersimpledev/chatbot.js"></script>
@@ -22,11 +109,6 @@
           setInputText(event.target.value);
         }
         
-        
-        
-          
-        
-          
         async  function sendMessage (){ // we async here bcz await is always inside the async
           
           // disable the send button when the we are in loading state and when input is empty
@@ -42,7 +124,7 @@
           setInputText('');
 
         
-          const newChatMessages = [ // we save this in a variable so that it will be saved.
+          const newChatMessages = [ // we save this in a variable so that it will be used later.
             ...chatMessages,
             { //we adds a new chat message ata the end of the copy
               message: inputText,
@@ -52,7 +134,7 @@
             // Another solution is to add the Loading... message
             // to newChatMessages, but we have to remove it later.
             {
-              message: 'Loading...',
+              message: <img src="loading-spinner.gif" className="loading-spinner" />,
               sender: 'robot',
               id: crypto.randomUUID()
             }
@@ -83,16 +165,19 @@
           }
         }
         return (
-          <>
+          <div className="chat-input-container">
             <input 
               placeholder= "Send a message to Chatbot" 
               size= "30" onChange={saveInputText}
               onKeyDown={handleKeyDown}
               value={inputText}
+              className="chat-input"
             />
 
-            <button onClick= {sendMessage}>Send</button>
-          </>
+            <button onClick= {sendMessage}
+              className= "send-button"
+            >Send</button>
+          </div>
         );
       }
       function ChatMessage({ message, sender }){
@@ -113,13 +198,21 @@
         */
         
         return (
-          <div>
+          <div className={
+            sender ==='user'
+              ? 'chat-message-user' 
+              : 'chat-message-robot'
+          }>
             {sender === 'robot' && (
-              <img src= "robot.png" width= "50"/>
+              <img src= "robot.png" className="chat-message-profile"/>
             )}
-            {message}
+
+            <div className="chat-message-text">
+              {message}
+            </div>
+            
            {sender ==='user' && (
-              <img src= "user.png" width= "50"/>
+              <img src= "user.png" className="chat-message-profile"/>
             )}
           </div>
         );
@@ -127,11 +220,16 @@
 
       function ChatMessages({chatMessages}){
         
-
-        
+        const chatMessageRef = React.useRef(null);
+        React.useEffect(() =>{
+          const containerElem = chatMessageRef.current;// we need to get HTML element we want to scroll into js
+          if(containerElem){// to check if container exist
+            containerElem.scrollTop = containerElem.scrollHeight;
+          }
+        }, [chatMessages]);
         
         return (
-          <> 
+          <div className="chat-messages-container" ref={chatMessageRef}> 
            
             {chatMessages.map((chatMessage) => {
               return(
@@ -142,53 +240,36 @@
                 />
               );
             })}
-          </>
+          </div>
         )
 
       }
       
       function App(){
-        const [chatMessages, setChatMessages]= React.useState([ 
-          {
-            message: 'Hello chatbot',
-            sender: 'user',
-            id: 'id1'
-         },
-
-          {
-            message: 'Hello! How can I help you?',
-            sender: 'robot',
-            id: 'id2'
-          },
-
-          {
-            message: 'can you get me todays date?',
-            sender: 'user',
-            id: 'id3'
-          },
-
-          {
-            message: 'Today is August 14',
-            sender: 'robot',
-            id: 'id4'
-          } 
-        ]);
+        const [chatMessages, setChatMessages]= React.useState([]);
+         
         
         //const [chatMessages, setChartMessages] = array; // array destructing shortcut, accessing the props
         //const chatMessages = array[0];
         //const setChatMessages = array[1];
 
         return (
-          <>
+          <div className="app-container">
+            {chatMessages.length === 0 &&(
+              <p className="welcome-message">
+                Welcome to the chatbot project! Send a message using the textbox below.
+              </p> 
+            )}
+            <ChatMessages 
+              chatMessages = {chatMessages}
+            />
+
             <ChatInput 
               chatMessages= {chatMessages}
               setChatMessages = {setChatMessages}
             />
-            <ChatMessages 
-              chatMessages = {chatMessages}
-            />
             
-          </>
+          </div>
         )
       }
 
@@ -349,7 +430,66 @@
   ----------------
   -> is an input form element (like <input>, <textarea>, or <select>) whose value is controlled by React state.
   -> For this example using the value prop we can controll the text inside the textbox using our code.
---
+
+  HOOKS
+  -----
+  -> Hooks are functions that add state, side effects, refs, and more to functional components.
+  -> Let us insert React features into our component.
+  -> Hooks are useState, useEffect, useContext, useRef, useReducer, useMemo, useCallback,
+  useLayoutEffect.
+  -> Put hooks at the top of the component.
+  -> Hooks should not be inside anything like if statements, nor function. 
+
+  useEffect()
+  ----------
+  -> Run some code after the component is created or updated.
+  -> In our project, after we add a chat message we want to run some code to scroll to the bottom that is
+  why we used useEffect().
+  ->useEffect() has two parameters those are: function to run if some thing is changed and array which controls
+  when useEffect runs.
+  -> If we give it an empty array, useEffect will only run once after component is created.
+  ->UseEffect has two parameters first one is the function to run another is the Dependency array 
+  ->[chatMessages] = run this function(first parameter) every time chatMessages changes.
+  -> [chatMessages] is called 'Dependency array' it lets control when useEffect runs.it means this effect will
+ re-run every time the chatMessages state changes (i.e., whenever a new message is added).
+
+  useRef()
+  -------
+  ->Let us automatically save an HTML elemment from the component.
+  
+  Note: After the chat messages changes we want to automatically scroll to the bottom.To scroll to the bottom first we need to get the
+  HTML element  that we want to scroll into our JS. in normal JS, to get HTML element we used DOM. But  in React we don't use DOM manually,
+  instead we should use React features to get this element . To get this element using React we use hook called 'useRef()'.
+
+  React will save this HTML element and save it inside 'chatMessageRef'. To access the HTML element saved inside the ref, we will write 
+  chatMessageRef.current
+  
+
+  const chatMessagesRef = React.useRef(null);
+  ------------------------------------------
+  ->React.useRef(null) creates a ref object.
+  ->Initially, .current is null because no HTML element is assigned yet.
+   
+  div className="chat-messages-container" ref={chatMessagesRef}>
+  -------------------------------------------------------------
+  -> chatMessagesRef is a ref object created with React.useRef(null).
+  -> The ref prop tells React: “Hey, put this actual DOM element (<div>) into chatMessagesRef.current.”
+  
+  chatMessagesRef.current
+  -----------------------
+  ->will hold the HTML <div> element, not the individual chat messages.
+  -> So it doesn’t store the chat messages themselves—it stores the container
+   that holds the messages. You use this, for example, to scroll to the bottom 
+   of the chat container automatically after adding a new message.
+
+  Note: The reason we put chatMessagesRef.current inside useEffect is bcz useEffect runs after the component is created. So we need to wait 
+  for the component to be created first and then we can access chat-messages-container
+  
+  containerElem.scrollTop = containerElem.scrollHeight;
+  ----------------------------------------------------
+  ->scrollTop means how far from top should we scroll? and scrollHeight gives us the total height of the element
+  -> So when you set scrollTop equal to scrollHeight, the container jumps to the bottom
+---
 
 
 
